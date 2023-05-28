@@ -1,0 +1,5 @@
+BACKENDS = [
+    'torch',
+    'cuda',
+    'triton'
+]
