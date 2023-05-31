@@ -116,8 +116,7 @@ class RotaryEmbedding(torch.nn.Module):
             base=10000,
     ):
         super().__init__()
-        inv_freq = 1.0 / (base ** (torch.arange(0, head_dim, 2).float() / head_dim))
-        self.register_buffer("inv_freq", inv_freq, persistent=False)
+        self.inv_freq = 1.0 / (base ** (torch.arange(0, head_dim, 2).float() / head_dim))
         self.head_dim = head_dim
         self.seq_len_cached = None
         self.batch_size_cached = None
