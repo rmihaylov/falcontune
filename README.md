@@ -30,7 +30,7 @@ Took 10.042 s
 
 This example is based on the model: TheBloke/falcon-40b-instruct-GPTQ.
 
-Here is a [Google Colab](https://colab.research.google.com/drive/1JoSObRbuehRHWh7Q12Qy-7kFPRVj25yz?usp=sharing). 
+Here is a [Google Colab](https://colab.research.google.com/drive/1Pv7Dn60u_ANgkhRojAIX-VOkU3J-2cYh?usp=sharing). 
 You will need a A100 40GB to finetune the model.
 
 ## Installation
