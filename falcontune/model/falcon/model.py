@@ -24,6 +24,7 @@ from transformers.utils import logging
 from peft import PeftModel
 
 from falcontune.backend.base import replace_4bit_linear, find_layers
+from falcontune.model.lora import Linear4bitLt
 
 logger = logging.get_logger("transformers")
 
@@ -1203,15 +1204,14 @@ def load_model(llm_config, checkpoint, half=False, backend='triton'):
     return model, tokenizer
 
 
-def load_model_and_offload(llm_config, checkpoint, lora_path=None, max_memory=None, half=False, backend='triton'):
+def load_model_and_offload(llm_config, checkpoint, half=False, backend='triton', lora_path=None, max_memory=None):
     if max_memory is None:
-        max_memory = {0: '24Gib', 'cpu': '48Gib'}
+        max_memory = {0: '13Gib', 'cpu': '25Gib'}
 
     config = RWConfig.from_pretrained(llm_config.hf_config_name)
     config.max_seq_len = llm_config.max_seq_len
 
     assert config.alibi is False
-    assert config.bias is False
 
     if half:
         torch.set_default_dtype(torch.half)
@@ -1240,13 +1240,6 @@ def load_model_and_offload(llm_config, checkpoint, lora_path=None, max_memory=No
 
     model.loaded_in_4bit = True
 
-    # rotary_emb fix
-    # for n, m in model.named_modules():
-    #     if 'rotary_emb' in n:
-    #         cos_cached = m.cos_cached.clone().cpu()
-    #         sin_cached = m.sin_cached.clone().cpu()
-    #         break
-
     if lora_path is not None:
         model = PeftModel.from_pretrained(
             model, lora_path,
@@ -1258,10 +1251,10 @@ def load_model_and_offload(llm_config, checkpoint, lora_path=None, max_memory=No
 
     model.seqlen = llm_config.max_seq_len
 
-    # for n, m in model.named_modules():
-    #     if isinstance(m, Autograd4bitQuantLinear) or ((lora_path is not None) and isinstance(m, Linear4bitLt)):
-    #         m.scales = m.scales.half()
-    #         m.bias = m.bias.half()
+    for n, m in model.named_modules():
+        if isinstance(m, ql.QuantLinear) or isinstance(m, Linear4bitLt):
+            m.scales = m.scales.half()
+            m.bias = m.bias.half()
 
     device_map = accelerate.infer_auto_device_map(
         model, max_memory=max_memory,
@@ -1274,20 +1267,6 @@ def load_model_and_offload(llm_config, checkpoint, lora_path=None, max_memory=No
     torch.cuda.empty_cache()
 
     logger.info('Total {:.2f} Gib VRAM used.'.format(torch.cuda.memory_allocated() / 1024 / 1024))
-
-    # rotary_emb fix
-    # for n, m in model.named_modules():
-    #     if 'rotary_emb' in n:
-    #         if getattr(m, '_hf_hook', None):
-    #             if isinstance(m._hf_hook, accelerate.hooks.SequentialHook):
-    #                 hooks = m._hf_hook.hooks
-    #             else:
-    #                 hooks = [m._hf_hook]
-    #             for hook in hooks:
-    #                 if hook.offload:
-    #                     if n + '.sin_cached' not in hook.weights_map.dataset.state_dict.keys():
-    #                         hook.weights_map.dataset.state_dict[n + '.sin_cached'] = sin_cached.clone().cpu()
-    #                         hook.weights_map.dataset.state_dict[n + '.cos_cached'] = cos_cached.clone().cpu()
 
     tokenizer = transformers.AutoTokenizer.from_pretrained(llm_config.hf_config_name)
     tokenizer.truncation_side = 'left'
