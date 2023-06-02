@@ -83,7 +83,7 @@ def generate(args):
             )
         end_time = time.time()
 
-        output = tokenizer.decode(generated_ids.cpu().tolist()[0])
+        output = tokenizer.decode(generated_ids.cpu().tolist()[0], skip_special_tokens=True)
 
         if args.instruction:
             output = format_output(output)
