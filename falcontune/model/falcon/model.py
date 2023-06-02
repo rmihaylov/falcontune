@@ -29,15 +29,9 @@ from falcontune.model.lora import Linear4bitLt
 logger = logging.get_logger("transformers")
 
 
-# NOTE(Hesslow): Unfortunately we did not fuse matmul and bias during training, this means that there's one additional quantization to bfloat16 between the operations.
-# In order not to degrade the quality of our HF-port, we keep these characteristics in the final model.
-# class Linear(nn.Linear):
-#     def forward(self, input: torch.Tensor) -> torch.Tensor:
-#         ret = input @ self.weight.T
-#         if self.bias is None:
-#             return ret
-#         else:
-#             return ret + self.bias
+def get_decoder_layer(num_heads: int):
+    assert num_heads in [71, 128]
+    return DecoderLayer7B if num_heads == 71 else DecoderLayer40B
 
 
 class RWConfig(PretrainedConfig):
@@ -818,8 +812,7 @@ class RWModel(RWPreTrainedModel):
         # Embedding + LN Embedding
         self.word_embeddings = nn.Embedding(config.vocab_size, self.embed_dim)
 
-        assert self.num_heads in [71, 128]
-        DecoderLayer = DecoderLayer7B if self.num_heads == 71 else DecoderLayer40B
+        DecoderLayer = get_decoder_layer(self.num_heads)
 
         # Transformer blocks
         self.h = nn.ModuleList([
