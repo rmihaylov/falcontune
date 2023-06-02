@@ -1197,9 +1197,9 @@ def load_model(llm_config, checkpoint, half=False, backend='triton'):
     tokenizer = transformers.AutoTokenizer.from_pretrained(llm_config.hf_tokenizer_config)
     tokenizer.truncation_side = 'left'
 
-    tokenizer.bos_token_id = config.bos_token_id
-    tokenizer.eos_token_id = config.eos_token_id
-    tokenizer.pad_token_id = config.eos_token_id
+    tokenizer.bos_token_id = None
+    tokenizer.eos_token_id = tokenizer.vocab["<|endoftext|>"]
+    tokenizer.pad_token_id = tokenizer.vocab["<|endoftext|>"]
 
     return model, tokenizer
 
@@ -1271,8 +1271,8 @@ def load_model_and_offload(llm_config, checkpoint, half=False, backend='triton',
     tokenizer = transformers.AutoTokenizer.from_pretrained(llm_config.hf_config_name)
     tokenizer.truncation_side = 'left'
 
-    tokenizer.bos_token_id = config.bos_token_id
-    tokenizer.eos_token_id = config.eos_token_id
-    tokenizer.pad_token_id = config.eos_token_id
+    tokenizer.bos_token_id = None
+    tokenizer.eos_token_id = tokenizer.vocab["<|endoftext|>"]
+    tokenizer.pad_token_id = tokenizer.vocab["<|endoftext|>"]
 
     return model, tokenizer
