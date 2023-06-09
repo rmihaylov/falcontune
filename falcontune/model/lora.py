@@ -36,12 +36,7 @@ class Linear4bitLt(QuantLinearBase, LoraLayer):
 
         LoraLayer.__init__(self, in_features=in_features, out_features=out_features)
 
-        self.quant_instance = get_quant_class(framework)(
-          bits,
-          groupsize,
-          in_features,
-          out_features
-        )
+        self.quant_class = get_quant_class(framework)
         
         # Freezing the pre-trained weight matrix
         self.qweight.requires_grad = False
@@ -56,7 +51,7 @@ class Linear4bitLt(QuantLinearBase, LoraLayer):
         self.active_adapter = adapter_name
 
     def forward(self, x: torch.Tensor):
-        result = self.quant_instance.forward(x)
+        result = self.quant_class.forward(self, x)
         
         if self.disable_adapters or self.active_adapter not in self.lora_A.keys():
             return result
