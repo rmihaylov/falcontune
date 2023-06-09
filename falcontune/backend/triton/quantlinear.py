@@ -14,13 +14,10 @@ class QuantLinear(QuantLinearBase):
                 x, self.qweight, self.scales,
                 self.qzeros, self.g_idx, self.bits, self.maxq)
         else:
-            out = self._forward_no_grad(x)
+            assert self.qzeros.dtype == torch.int32
+            out = tu.triton_matmul(x, self.qweight, self.scales, self.qzeros, self.g_idx, self.bits, self.maxq)
 
         if self.bias is not None:
             out += self.bias
 
         return out
-
-    def _forward_no_grad(self, x):
-        assert self.qzeros.dtype == torch.int32
-        return tu.triton_matmul(x, self.qweight, self.scales, self.qzeros, self.g_idx, self.bits, self.maxq)
