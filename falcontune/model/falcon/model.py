@@ -707,6 +707,9 @@ class DecoderLayer7B(nn.Module):
 
         attention_output = attn_outputs[0]
 
+        # FIX MULTI-GPU TRAINING
+        attention_output = attention_output.to(layernorm_output.device)
+
         if not self.config.parallel_attn:
             residual = dropout_add(attention_output, residual, self.config.attention_dropout, training=self.training)
             layernorm_output = self.post_attention_layernorm(residual)
