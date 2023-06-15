@@ -58,10 +58,12 @@ def generate(args):
     if args.prompt and args.instruction:
         raise Exception('Cannot specify both prompt and instruction')
 
-    prompt, instruction = args.prompt, args.instruction
+    prompt, instruction, input_ = args.prompt, args.instruction, args.input_
+    running_input = input_ if input_ else "" # used as context in interactive mode
+    is_contextual = args.contextual if args.contextual else False
 
     while True:
-        prompt = make_prompt(instruction, input_="") \
+        prompt = make_prompt(instruction, input_= running_input) \
             if args.instruction else prompt
 
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to(model.device)
@@ -95,7 +97,13 @@ def generate(args):
         if not args.interactive:
             break
 
-        if args.instruction:
-            instruction = input("Enter new instruction: ")
+        if is_contextual:
+            running_input += '\n{output}'.format(output=output)
+            # prompt for new input
+            new_input = input("Enter new input: ")
+            running_input += '\n{new_input}'.format(new_input=new_input)
         else:
-            prompt = input("Enter new prompt: ")
+            if args.instruction:
+                instruction = input("Enter new instruction: ")
+            else:
+                prompt = input("Enter new prompt: ")
