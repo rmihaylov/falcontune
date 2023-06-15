@@ -58,7 +58,7 @@ def generate(args):
     if args.prompt and args.instruction:
         raise Exception('Cannot specify both prompt and instruction')
 
-    prompt, instruction, input_ = args.prompt, args.instruction, args.input_
+    prompt, instruction, input_ = args.prompt, args.instruction, args.input
     running_input = input_ if input_ else "" # used as context in interactive mode
     is_contextual = args.contextual if args.contextual else False
 

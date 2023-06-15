@@ -36,6 +36,7 @@ def get_args():
     gen_parser.add_argument('--interactive', action="store_true", help='Enter prompts interactively.')
     gen_parser.add_argument('--backend', type=str, default='triton', choices=BACKENDS, required=False, help='Change the default backend.')
     gen_parser.add_argument('--contextual', action="store_true", help='Use contextual generation.')
+    gen_parser.add_argument('--input', type=str, default='', help='Input for contextual generation.')
 
     # FINETUNE
     tune_parser = subparsers.add_parser('finetune')
