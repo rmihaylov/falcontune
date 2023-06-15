@@ -26,6 +26,7 @@ def get_args():
     gen_parser.add_argument("--lora_apply_dir", default=None, required=False, help="Path to directory from which LoRA has to be applied before training. Default: %(default)s")
     gen_parser.add_argument('--prompt', type=str, default='', help='Text used to initialize generation')
     gen_parser.add_argument('--instruction', type=str, default='', help='Instruction for an alpaca-style model')
+    gen_parser.add_argument('--input', type=str, default='', help='Input for an alpaca-style model')
     gen_parser.add_argument('--max_new_tokens', type=int, default=400, help='Maximum new tokens of the sequence to be generated.')
     gen_parser.add_argument('--top_p', type=float, default=.95, help='Top p sampling parameter.')
     gen_parser.add_argument('--top_k', type=int, default=40, help='Top p sampling parameter.')

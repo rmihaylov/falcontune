@@ -58,10 +58,10 @@ def generate(args):
     if args.prompt and args.instruction:
         raise Exception('Cannot specify both prompt and instruction')
 
-    prompt, instruction = args.prompt, args.instruction
+    prompt, instruction, input = args.prompt, args.instruction, args.input
 
     while True:
-        prompt = make_prompt(instruction, input_="") \
+        prompt = make_prompt(instruction, input_=input) \
             if args.instruction else prompt
 
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to(model.device)
