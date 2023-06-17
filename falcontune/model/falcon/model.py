@@ -1078,9 +1078,8 @@ class RWForCausalLM(RWPreTrainedModel):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-        hidden_states = transformer_outputs[0]
 
-        lm_logits = self.lm_head(hidden_states)
+        lm_logits = self.lm_head(transformer_outputs.last_hidden_state)
 
         loss = None
         if labels is not None:
@@ -1091,7 +1090,8 @@ class RWForCausalLM(RWPreTrainedModel):
             # Flatten the tokens
             loss_fct = CrossEntropyLoss()
             loss = loss_fct(
-                shift_logits.view(batch_size * seq_length, vocab_size), shift_labels.view(batch_size * seq_length)
+                shift_logits.view(batch_size * seq_length, vocab_size),
+                shift_labels.view(batch_size * seq_length)
             )
 
         if not return_dict:
@@ -1161,7 +1161,9 @@ def load_model(llm_config, checkpoint, half=False, backend='triton'):
             )
 
         model = accelerate.load_checkpoint_and_dispatch(
-            model=model, checkpoint=checkpoint, device_map=llm_config.device_map,
+            model=model,
+            checkpoint=checkpoint,
+            device_map=llm_config.device_map,
             no_split_module_classes=["DecoderLayer"]
         )
 
@@ -1189,10 +1191,15 @@ def load_model(llm_config, checkpoint, half=False, backend='triton'):
 
     tokenizer = transformers.AutoTokenizer.from_pretrained(llm_config.hf_tokenizer_config)
     tokenizer.truncation_side = 'left'
+    tokenizer.padding_side = 'left'
 
     tokenizer.bos_token_id = None
     tokenizer.eos_token_id = tokenizer.vocab["<|endoftext|>"]
-    tokenizer.pad_token_id = tokenizer.vocab["<|endoftext|>"]
+
+    if tokenizer.pad_token is None:
+        tokenizer.add_tokens('<pad>', special_tokens=True)
+        tokenizer.pad_token = '<pad>'
+        assert tokenizer.pad_token_id is not None
 
     return model, tokenizer
 
@@ -1229,7 +1236,10 @@ def load_model_and_offload(llm_config, checkpoint, half=False, backend='triton',
             quantlinear_class=ql.QuantLinear
         )
 
-    accelerate.load_checkpoint_in_model(model, checkpoint=checkpoint, device_map={'': 'cpu'})
+    accelerate.load_checkpoint_in_model(
+        model,
+        checkpoint=checkpoint,
+        device_map={'': 'cpu'})
 
     model.loaded_in_4bit = True
 
@@ -1263,9 +1273,14 @@ def load_model_and_offload(llm_config, checkpoint, half=False, backend='triton',
 
     tokenizer = transformers.AutoTokenizer.from_pretrained(llm_config.hf_config_name)
     tokenizer.truncation_side = 'left'
+    tokenizer.padding_side = 'left'
 
     tokenizer.bos_token_id = None
     tokenizer.eos_token_id = tokenizer.vocab["<|endoftext|>"]
-    tokenizer.pad_token_id = tokenizer.vocab["<|endoftext|>"]
+
+    if tokenizer.pad_token is None:
+        tokenizer.add_tokens('<pad>', special_tokens=True)
+        tokenizer.pad_token = '<pad>'
+        assert tokenizer.pad_token_id is not None
 
     return model, tokenizer
