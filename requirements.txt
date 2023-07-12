@@ -1,5 +1,5 @@
 --extra-index-url https://download.pytorch.org/whl/cu118
-transformers==4.29.2
+transformers==4.30.0
 triton==2.0.0
 sentencepiece==0.1.99
 datasets==2.12.0
