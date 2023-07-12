@@ -1,4 +1,4 @@
-from falcontune.model.falcon.config import (
+from falcontune.model.config import (
     FALCON7B8bitConfig,
     FALCON7BRW8bitConfig,
     FALCON7BInstruct8bitConfig,
@@ -29,7 +29,7 @@ def load_model(model_name: str, weights, half=False, backend='triton'):
     model_config = MODEL_CONFIGS[model_name]
 
     if model_name in MODEL_CONFIGS:
-        from falcontune.model.falcon.model import load_model
+        from falcontune.model.model_ops import load_model
         model, tokenizer = load_model(model_config, weights, half=half, backend=backend)
 
     else:

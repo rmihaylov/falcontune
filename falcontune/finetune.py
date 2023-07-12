@@ -90,11 +90,11 @@ def finetune(args):
         if tune_config.gradient_checkpointing:
             logger.info('Applying gradient checkpointing ...')
             from falcontune.model.gradient_checkpointing import apply_gradient_checkpointing
-            from falcontune.model.falcon.model import get_decoder_layer
+            from falcontune.model.model_ops import FalconDecoderLayer
 
             apply_gradient_checkpointing(
                 model,
-                decoder_layer_class=get_decoder_layer(num_heads=llm.config.n_head),
+                decoder_layer_class=FalconDecoderLayer(num_heads=llm.config.n_head),
                 checkpoint_ratio=tune_config.gradient_checkpointing_ratio)
 
         # Disable Trainer's DataParallel for multigpu
