@@ -57,7 +57,7 @@ The above process installs a `falcontune` command in your environment.
 
 First, start by downloading the weights of a FALCON model:
 ```
-$ wget https://huggingface.co/TheBloke/falcon-40b-instruct-GPTQ/resolve/main/gptq_model-4bit--1g.safetensors
+$ wget https://huggingface.co/TheBloke/falcon-40b-instruct-GPTQ/resolve/main/model.safetensors
 ```
 
 ### Generate Text
